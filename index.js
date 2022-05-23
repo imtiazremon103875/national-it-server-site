@@ -19,12 +19,12 @@ function verifyJWT(req, res, next) {
     if (!authHeader) {
         return res.status(401).send({ message: "unauthorized access" })
     }
-    const token = authHeader.split('')[1];
+    const token = authHeader.split(' ')[1];
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
         if (err) {
             return res.status(403).send({ message: "forbidden access" })
         }
-        req.decoded = decoded
+        req.decoded = decoded;
         next()
     })
 }
@@ -35,7 +35,7 @@ async function run() {
         await client.connect();
         const partsCollection = client.db('national-computer').collection('parts')
         const userCollection = client.db('national-computer').collection('users')
-        const bookingCollection = client.db('national-computer').collection('bookings')
+        const orderCollection = client.db('national-computer').collection('orders')
 
         app.get('/part', async (req, res) => {
             const query = {}
@@ -43,7 +43,7 @@ async function run() {
             res.send(parts)
         });
 
-        app.get('/part/:id', async (req, res) => {
+        app.get('/part/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
             const singlePart = await partsCollection.findOne(query)
@@ -62,6 +62,11 @@ async function run() {
             const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30d' })
             res.send({ result, token });
         })
+        app.post('/order', async (req, res) => {
+            const order = req.body;
+            const result = await orderCollection.insertOne(order);
+            res.send(result)
+        })
 
     }
     finally {
@@ -75,5 +80,5 @@ app.get('/', (req, res) => {
 })
 
 app.listen(port, () => {
-    console.log(`DOctor app listening on port ${port}`)
+    console.log(`national app listening on port ${port}`)
 })
