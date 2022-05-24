@@ -68,6 +68,20 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/order', verifyJWT, async (req, res) => {
+
+            const email = req.query.email;
+            const decodedEmail = req.decoded.email;
+            if (email == decodedEmail) {
+                const query = { email }
+                const orders = await orderCollection.find(query).toArray()
+                return res.send(orders)
+            }
+            else {
+                return res.status(403).send({ message: "forbidden access" })
+            }
+        })
+
     }
     finally {
 
