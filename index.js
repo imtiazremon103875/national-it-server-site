@@ -36,6 +36,7 @@ async function run() {
         const partsCollection = client.db('national-computer').collection('parts')
         const userCollection = client.db('national-computer').collection('users')
         const orderCollection = client.db('national-computer').collection('orders')
+        const reviewCollection = client.db('national-computer').collection('reviews')
 
         app.get('/part', async (req, res) => {
             const query = {}
@@ -80,6 +81,17 @@ async function run() {
             else {
                 return res.status(403).send({ message: "forbidden access" })
             }
+        })
+        app.delete('/product/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await orderCollection.deleteOne(query)
+            res.send(result)
+        })
+        app.post('/review', verifyJWT, async (req, res) => {
+            const review = req.body;
+            const result = await reviewCollection.insertOne(review);
+            res.send(result)
         })
 
     }
