@@ -37,6 +37,7 @@ async function run() {
         const userCollection = client.db('national-computer').collection('users')
         const orderCollection = client.db('national-computer').collection('orders')
         const reviewCollection = client.db('national-computer').collection('reviews')
+        const profileCollection = client.db('national-computer').collection('profiles')
 
         app.get('/part', async (req, res) => {
             const query = {}
@@ -91,6 +92,22 @@ async function run() {
         app.post('/review', verifyJWT, async (req, res) => {
             const review = req.body;
             const result = await reviewCollection.insertOne(review);
+            res.send(result)
+        })
+        app.get('/review', verifyJWT, async (req, res) => {
+            const query = {}
+            const result = await reviewCollection.find(query).toArray();
+            res.send(result)
+        })
+        app.put('/profile/:email', async (req, res) => {
+            const email = req.params.email;
+            const profile = req.body;
+            const filter = { email: email }
+            const options = { upsert: true }
+            const updateDoc = {
+                $set: profile
+            }
+            const result = await profileCollection.updateOne(filter, updateDoc, options);
             res.send(result)
         })
 
