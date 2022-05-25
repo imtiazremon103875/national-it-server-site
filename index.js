@@ -52,7 +52,7 @@ async function run() {
 
         app.get('/part', async (req, res) => {
             const query = {}
-            const parts = await partsCollection.find(query).limit(6).toArray()
+            const parts = await partsCollection.find(query).sort({ _id: -1 }).limit(6).toArray()
             res.send(parts)
         });
 
@@ -142,6 +142,11 @@ async function run() {
             const user = await userCollection.findOne({ email: email });
             const isAdmin = user.role === 'admin';
             res.send({ admin: isAdmin })
+        })
+        app.post('/product', verifyJWT, verifyAdmin, async (req, res) => {
+            const product = req.body;
+            const result = await partsCollection.insertOne(product)
+            res.send(result)
         })
 
     }
