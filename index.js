@@ -101,7 +101,7 @@ async function run() {
                 return res.status(403).send({ message: "forbidden access" })
             }
         })
-        app.delete('/product/:id', verifyJWT, async (req, res) => {
+        app.delete('/userProduct/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
             const result = await orderCollection.deleteOne(query)
@@ -114,7 +114,7 @@ async function run() {
         })
         app.get('/review', verifyJWT, async (req, res) => {
             const query = {}
-            const result = await reviewCollection.find(query).toArray();
+            const result = await reviewCollection.find(query).sort({ _id: -1 }).toArray();
             res.send(result)
         })
         app.put('/profile/:email', async (req, res) => {
@@ -147,6 +147,21 @@ async function run() {
             const product = req.body;
             const result = await partsCollection.insertOne(product)
             res.send(result)
+        })
+
+        app.get('/products', verifyJWT, verifyAdmin, async (req, res) => {
+            const products = await partsCollection.find().toArray();
+            res.send(products)
+        })
+        app.delete('/adminProduct/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await partsCollection.deleteOne(query)
+            res.send(result)
+        })
+        app.get('/allOrders', verifyJWT, verifyAdmin, async (req, res) => {
+            const allOrders = await orderCollection.find().toArray();
+            res.send(allOrders)
         })
 
     }
